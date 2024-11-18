@@ -1,0 +1,103 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Raffle is Ownable {
+    address payable[] public participants; // Array to store participant addresses
+    uint256 public ticketPrice; // The price to enter the raffle
+    bool public raffleActive; // Boolean to check if the raffle is active
+
+    event RaffleEntered(address indexed participant, uint256 amount);
+    event WinnerSelected(address indexed winner, uint256 prizeAmount);
+    event RaffleStarted();
+    event RaffleEnded();
+
+    constructor(uint256 _ticketPrice) {
+        ticketPrice = _ticketPrice;
+        raffleActive = false;
+    }
+
+    /**
+     * @notice Start the raffle
+     */
+    function startRaffle() external onlyOwner {
+        require(!raffleActive, "Raffle already started");
+        raffleActive = true;
+        emit RaffleStarted();
+    }
+
+    /**
+     * @notice Enter the raffle by paying the ticket price
+     */
+    function enterRaffle() external payable {
+        require(raffleActive, "Raffle is not active");
+        require(msg.value == ticketPrice, "Incorrect ETH amount");
+
+        participants.push(payable(msg.sender)); // Add participant to the array
+        emit RaffleEntered(msg.sender, msg.value);
+    }
+
+    /**
+     * @notice Select a random winner and transfer the prize
+     */
+    function selectWinner() external onlyOwner {
+        require(raffleActive, "Raffle is not active");
+        require(participants.length > 0, "No participants in the raffle");
+
+        // Generate a random index
+        uint256 randomIndex = getRandomNumber() % participants.length;
+        address payable winner = participants[randomIndex];
+        uint256 prizeAmount = address(this).balance;
+
+        // Send the entire contract balance to the winner
+        (bool success, ) = winner.call{value: prizeAmount}("");
+        require(success, "Transfer failed");
+
+        emit WinnerSelected(winner, prizeAmount);
+
+        // Reset the raffle
+        raffleActive = false;
+        delete participants;
+        emit RaffleEnded();
+    }
+
+    /**
+     * @notice Withdraw ETH from the contract (in case of emergency)
+     */
+    function withdraw() external onlyOwner {
+        require(address(this).balance > 0, "No funds to withdraw");
+        (bool success, ) = owner().call{value: address(this).balance}("");
+        require(success, "Withdraw failed");
+    }
+
+    /**
+     * @notice Generate a pseudo-random number (not secure, use Chainlink VRF for production)
+     */
+    function getRandomNumber() private view returns (uint256) {
+        return
+            uint256(
+                keccak256(
+                    abi.encodePacked(
+                        block.timestamp,
+                        block.difficulty,
+                        participants.length
+                    )
+                )
+            );
+    }
+
+    /**
+     * @notice Get the current balance of the contract
+     */
+    function getBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    /**
+     * @notice Get the total number of participants
+     */
+    function getParticipantCount() external view returns (uint256) {
+        return participants.length;
+    }
+}
