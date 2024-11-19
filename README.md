@@ -5,7 +5,7 @@
 
 # Foundry Smart Contract Lottery
 
-This is a section of the Cyfrin Foundry Solidity Course.
+This is a section of the Cyaxiom Foundry Solidity Course.
 
 - [Foundry Smart Contract Lottery](#foundry-smart-contract-lottery)
 - [Getting Started](#getting-started)

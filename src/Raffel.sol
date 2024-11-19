@@ -15,6 +15,12 @@ contract Raffel is VRFConsumerBaseV2Plus {
     error Raffel__SendMoreEth();
     error Raffel__TransferFailed();
     error Raffel_RaffelNotOpen();
+    error Raffel__UpkeepNotNeeded(
+        uint256 balance,
+        uint256 playersLength,
+        uint256 raffelStatus
+    );
+
     /** Type declaration */
     enum RaffelStatus {
         OPEN,
@@ -97,7 +103,16 @@ contract Raffel is VRFConsumerBaseV2Plus {
         return (upkeepNeeded, "");
     }
 
-    function pickWinner() external {
+    function performUpkeep(bytes calldata /*performData*/) external {
+        (bool upkeepNeeded, ) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Raffel__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                uint256(s_raffelStatus)
+            );
+        }
+
         if (s_lastTimeStamp - block.timestamp < i_interval) {
             revert();
         }
@@ -117,13 +132,13 @@ contract Raffel is VRFConsumerBaseV2Plus {
                 )
             });
 
-        uint256 requstId = s_vrfCoordinator.requestRandomWords(request);
+        s_vrfCoordinator.requestRandomWords(request);
     }
 
     // CEI: Check, Effect, Interaction
     // fulfillRandomWords function
     function fulfillRandomWords(
-        uint256 requestId,
+        uint256 /*requestId*/,
         uint256[] calldata randomWords
     ) internal override {
         // Check
