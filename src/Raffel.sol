@@ -47,14 +47,14 @@ contract Raffel is VRFConsumerBaseV2Plus {
 
     // functions
     constructor(
-        uint256 enteranceFee,
+        uint256 entranceFee,
         uint256 interval,
         address _vrfCoordinator,
         bytes32 _keyHash,
         uint256 _subscriptionId,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        i_entranceFee == enteranceFee;
+        i_entranceFee == entranceFee;
         i_interval = interval;
         s_lastTimeStamp == block.timestamp;
 

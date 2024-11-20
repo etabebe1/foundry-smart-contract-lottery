@@ -6,7 +6,7 @@ import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoo
 
 abstract contract HelperConfigConstants {
     uint256 ETH_MAINNET_CHAIN_ID = 1;
-    uint256 ETH_SEPOLIA_CHAIN_ID = 1115511;
+    uint256 ETH_SEPOLIA_CHAIN_ID = 11155111;
     uint256 ETH_ANVIL_CHAIN_ID = 31337;
 
     /* VRF Mock values*/
@@ -81,8 +81,6 @@ contract HelperConfig is Script, HelperConfigConstants {
     }
 
     function handleAnvilMock() internal {
-        console.log("Deploying mock VRFCoordinator for Anvil ...");
-
         VRFCoordinatorV2_5Mock vrfCoordinatorMockAddr = new VRFCoordinatorV2_5Mock(
                 baseFee,
                 gasPrice,
@@ -92,11 +90,12 @@ contract HelperConfig is Script, HelperConfigConstants {
         networkConfigs[ETH_ANVIL_CHAIN_ID].vrfCoordinator = address(
             vrfCoordinatorMockAddr
         );
-
-        console.log("Mock deployed at:", address(vrfCoordinatorMockAddr));
     }
 
-    function getConfig() external view returns (NetworkConfig memory) {
+    //* getter function */
+    function getNetworkConfig() external view returns (NetworkConfig memory) {
         return networkConfigs[block.chainid];
     }
+
+    // function getNetworkConfig () external view (NetworkConfig memory)
 }

@@ -9,7 +9,7 @@ contract DeployRaffel is Script {
     function deployContract() public returns (Raffel, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
-            .getConfig();
+            .getNetworkConfig();
 
         vm.startBroadcast();
         Raffel raffel = new Raffel(
