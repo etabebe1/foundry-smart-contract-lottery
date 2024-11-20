@@ -96,6 +96,4 @@ contract HelperConfig is Script, HelperConfigConstants {
     function getNetworkConfig() external view returns (NetworkConfig memory) {
         return networkConfigs[block.chainid];
     }
-
-    // function getNetworkConfig () external view (NetworkConfig memory)
 }

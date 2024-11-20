@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity ^0.8.24;
 
+import {console} from "forge-std/console.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
@@ -54,9 +55,9 @@ contract Raffel is VRFConsumerBaseV2Plus {
         uint256 _subscriptionId,
         uint32 _callbackGasLimit
     ) VRFConsumerBaseV2Plus(_vrfCoordinator) {
-        i_entranceFee == entranceFee;
+        i_entranceFee = entranceFee;
         i_interval = interval;
-        s_lastTimeStamp == block.timestamp;
+        s_lastTimeStamp = block.timestamp;
 
         s_vrfCoordinator.requestRandomWords;
         i_keyHash = _keyHash;
@@ -159,8 +160,18 @@ contract Raffel is VRFConsumerBaseV2Plus {
         }
     }
 
-    // getter function
+    //* getter function */
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffelStatus() external view returns (RaffelStatus) {
+        return s_raffelStatus;
+    }
+
+    function getPlayers(
+        uint256 _index
+    ) external view returns (address payable) {
+        return s_players[_index];
     }
 }

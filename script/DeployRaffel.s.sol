@@ -20,14 +20,8 @@ contract DeployRaffel is Script {
             networkConfig.subscriptionId,
             networkConfig.callbackGasLimit
         );
+
         vm.stopBroadcast();
-
-        // console.log("Raffel contract deployed at:", address(raffel));
-        // console.log(
-        //     "HelperConfig contract deployed at:",
-        //     address(helperConfig)
-        // );
-
         return (raffel, helperConfig);
     }
 
