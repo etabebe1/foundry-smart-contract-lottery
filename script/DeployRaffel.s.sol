@@ -22,11 +22,11 @@ contract DeployRaffel is Script {
         );
         vm.stopBroadcast();
 
-        console.log("Raffel contract deployed at:", address(raffel));
-        console.log(
-            "HelperConfig contract deployed at:",
-            address(helperConfig)
-        );
+        // console.log("Raffel contract deployed at:", address(raffel));
+        // console.log(
+        //     "HelperConfig contract deployed at:",
+        //     address(helperConfig)
+        // );
 
         return (raffel, helperConfig);
     }
