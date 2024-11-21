@@ -69,6 +69,7 @@ contract RaffelTest is Test, RaffelTestConstants {
 
         vm.expectEmit(true, false, false, false, address(raffel));
         emit RaffelEntered(PLAYER);
+
         raffel.enterRaffel{value: SEND_VALUE}();
     }
 }
