@@ -2,9 +2,10 @@
 pragma solidity ^0.8.26;
 
 import {Script, console} from "forge-std/Script.sol";
-import {HelperConfig} from "./HelperConfig.s.sol";
+import {HelperConfig, HelperConfigConstants} from "./HelperConfig.s.sol";
 import {Raffel} from "../src/Raffel.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {LinkToken} from "../test/mocks/LinkToken.sol";
 
 contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint256, address) {
@@ -35,14 +36,48 @@ contract CreateSubscription is Script {
     }
 }
 
-contract FundSubscription is Script {
-    function fundSubscription() internal {
+contract FundSubscription is Script, HelperConfigConstants {
+    uint256 public constant FUND_AMOUNT = 3 ether;
+
+    function fundSubscriptionUsingConfig() internal {
         HelperConfig helperConfig = new HelperConfig();
         address vrfCoordinator = helperConfig.getNetworkConfig().vrfCoordinator;
         uint256 subscriptionId = helperConfig.getNetworkConfig().subscriptionId;
+        address linkToken = helperConfig.getNetworkConfig().linkToken;
+
+        fundSubscription(vrfCoordinator, subscriptionId, linkToken);
+    }
+
+    function fundSubscription(
+        address vrfCoordinator,
+        uint256 subscriptionId,
+        address linkToken
+    ) public {
+        console.log("Subscription id:", vrfCoordinator);
+        console.log("Subscription id:", subscriptionId);
+        console.log("Subscription id:", linkToken);
+        console.log("On ChainId:", block.chainid);
+
+        if (block.chainid == ETH_ANVIL_CHAIN_ID) {
+            vm.startBroadcast();
+
+            VRFCoordinatorV2_5Mock coordinator = VRFCoordinatorV2_5Mock(
+                vrfCoordinator
+            );
+            coordinator.fundSubscription(subscriptionId, FUND_AMOUNT);
+            vm.stopBroadcast();
+        } else {
+            vm.startBroadcast();
+            LinkToken(linkToken).transferAndCall(
+                vrfCoordinator,
+                FUND_AMOUNT,
+                abi.encode(subscriptionId)
+            );
+            vm.stopBroadcast();
+        }
     }
 
     function run() external {
-        fundSubscription();
+        fundSubscriptionUsingConfig();
     }
 }
