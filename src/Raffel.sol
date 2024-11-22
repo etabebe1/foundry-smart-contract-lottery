@@ -11,7 +11,6 @@ import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2
  * @notice This is a raffel smart contract for lottery
  * @dev This contract is designed to be used with Chainlink's VRF2.5 (Verifiable Random Function)
  */
-
 contract Raffel is VRFConsumerBaseV2Plus {
     error Raffel__SendMoreEth();
     error Raffel__TransferFailed();
@@ -22,13 +21,17 @@ contract Raffel is VRFConsumerBaseV2Plus {
         uint256 raffelStatus
     );
 
-    /** Type declaration */
+    /**
+     * Type declaration
+     */
     enum RaffelStatus {
         OPEN,
         CALCULATING
     }
 
-    /** State Variables */
+    /**
+     * State Variables
+     */
     uint32 private constant NUM_WORDS = 1;
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
 
@@ -91,7 +94,7 @@ contract Raffel is VRFConsumerBaseV2Plus {
     function checkUpkeep(
         bytes memory /* checkData */
     ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
-        bool timeHasPassed = (s_lastTimeStamp - block.timestamp) >= i_interval;
+        bool timeHasPassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
         bool raffelIsOpen = s_raffelStatus == RaffelStatus.OPEN;
         bool raffelHasEth = address(this).balance > 0;
         bool raffelHasPlayers = s_players.length > 0;
@@ -105,6 +108,10 @@ contract Raffel is VRFConsumerBaseV2Plus {
     }
 
     function performUpkeep(bytes calldata /*performData*/) external {
+        // console.log("Block Timestamp:", block.timestamp);
+        // console.log("Interval:", i_interval);
+        // console.log("Last TimeStamp:", s_lastTimeStamp);
+
         (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffel__UpkeepNotNeeded(
@@ -112,10 +119,6 @@ contract Raffel is VRFConsumerBaseV2Plus {
                 s_players.length,
                 uint256(s_raffelStatus)
             );
-        }
-
-        if (s_lastTimeStamp - block.timestamp < i_interval) {
-            revert();
         }
 
         s_raffelStatus == RaffelStatus.CALCULATING;
@@ -139,8 +142,8 @@ contract Raffel is VRFConsumerBaseV2Plus {
     // CEI: Check, Effect, Interaction
     // fulfillRandomWords function
     function fulfillRandomWords(
-        uint256 /*requestId*/,
-        uint256[] calldata randomWords
+        uint256,
+        /*requestId*/ uint256[] calldata randomWords
     ) internal override {
         // Check
 

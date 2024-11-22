@@ -49,27 +49,43 @@ contract RaffelTest is Test, RaffelTestConstants {
         assert(raffel.getRaffelStatus() == Raffel.RaffelStatus.OPEN);
     }
 
-    function testIfPlayerHasNoEnoughEth() public payable {
-        vm.startPrank(PLAYER);
-        vm.expectRevert(Raffel.Raffel__SendMoreEth.selector);
-        raffel.enterRaffel(); //* test passes because sending empty or 0 Eth value makes enterRaffel() to fails or revert
-        // raffel.enterRaffel{value: 10 ether}(); //* test fails because sending eth > entranceFee transaction do not fail
-    }
-
-    function testRaffelRecordsPlayerAsTheyEnter() public payable {
+    function testPlayerHasEnoughEthToEnter() public {
         vm.startPrank(PLAYER);
         vm.deal(PLAYER, INITIAL_PLAYER_BALANCE);
+
+        vm.expectRevert(Raffel.Raffel__SendMoreEth.selector);
+        raffel.enterRaffel{value: 0}();
+    }
+
+    function testEnterRaffelRecordsPlayer() public {
+        vm.startPrank(PLAYER);
+        vm.deal(PLAYER, INITIAL_PLAYER_BALANCE);
+
         raffel.enterRaffel{value: SEND_VALUE}();
         assert(raffel.getPlayers(0) == PLAYER);
     }
 
-    function testRaffelEnteredEmit() public {
+    function testEmitEventWhenEnterRaffel() public {
         vm.startPrank(PLAYER);
         vm.deal(PLAYER, INITIAL_PLAYER_BALANCE);
 
         vm.expectEmit(true, false, false, false, address(raffel));
         emit RaffelEntered(PLAYER);
 
+        raffel.enterRaffel{value: SEND_VALUE}();
+    }
+
+    function testEnterRaffelNotAllowedWhileCalculating() public {
+        vm.startPrank(PLAYER);
+        vm.deal(PLAYER, INITIAL_PLAYER_BALANCE);
+        raffel.enterRaffel{value: SEND_VALUE}();
+
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        raffel.performUpkeep("");
+
+        vm.expectRevert(Raffel.Raffel_RaffelNotOpen.selector);
         raffel.enterRaffel{value: SEND_VALUE}();
     }
 }

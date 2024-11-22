@@ -81,15 +81,9 @@ contract HelperConfig is Script, HelperConfigConstants {
     }
 
     function handleAnvilMock() internal {
-        VRFCoordinatorV2_5Mock vrfCoordinatorMockAddr = new VRFCoordinatorV2_5Mock(
-                baseFee,
-                gasPrice,
-                weiPerUintLink
-            );
+        VRFCoordinatorV2_5Mock vrfCoordinatorMockAddr = new VRFCoordinatorV2_5Mock(baseFee, gasPrice, weiPerUintLink);
 
-        networkConfigs[ETH_ANVIL_CHAIN_ID].vrfCoordinator = address(
-            vrfCoordinatorMockAddr
-        );
+        networkConfigs[ETH_ANVIL_CHAIN_ID].vrfCoordinator = address(vrfCoordinatorMockAddr);
     }
 
     //* getter function */
