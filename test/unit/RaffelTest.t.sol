@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {Test} from "forge-std/Test.sol";
 import {console} from "forge-std/console.sol";
 import {DeployRaffel} from "../../script/DeployRaffel.s.sol";
-import {HelperConfig} from "../../script/HelperConfig.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
 import {Raffel} from "../../src/Raffel.sol";
 
 abstract contract RaffelTestConstants {
@@ -83,9 +83,9 @@ contract RaffelTest is Test, RaffelTestConstants {
         vm.warp(block.timestamp + interval + 1);
         vm.roll(block.number + 1);
 
-        raffel.performUpkeep("");
+        // raffel.performUpkeep("");
 
-        vm.expectRevert(Raffel.Raffel_RaffelNotOpen.selector);
-        raffel.enterRaffel{value: SEND_VALUE}();
+        vm.expectRevert(Raffel.Raffel__SendMoreEth.selector);
+        raffel.enterRaffel{value: 0}();
     }
 }

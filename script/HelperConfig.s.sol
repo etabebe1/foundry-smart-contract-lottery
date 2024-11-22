@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import {Script, console} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {LinkToken} from "../test/mocks/LinkToken.sol";
 
 abstract contract HelperConfigConstants {
     uint256 ETH_MAINNET_CHAIN_ID = 1;
@@ -25,6 +26,7 @@ contract HelperConfig is Script, HelperConfigConstants {
         bytes32 keyHash;
         uint256 subscriptionId;
         uint32 callbackGasLimit;
+        address linkToken;
     }
 
     NetworkConfig public activeNetworkConfig;
@@ -44,7 +46,8 @@ contract HelperConfig is Script, HelperConfigConstants {
             vrfCoordinator: 0xD7f86b4b8Cae7D942340FF628F82735b7a20893a,
             keyHash: 0x3fd2fec10d06ee8f65e7f2e95f5c56511359ece3f33960ad8a866ae24a8ff10b,
             subscriptionId: 0,
-            callbackGasLimit: 50000
+            callbackGasLimit: 50000,
+            linkToken: 0x514910771AF9Ca656af840dff83E8264EcF986CA
         });
 
         // Sepolia NetworkConfig
@@ -54,7 +57,8 @@ contract HelperConfig is Script, HelperConfigConstants {
             vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             subscriptionId: 0,
-            callbackGasLimit: 50000
+            callbackGasLimit: 50000,
+            linkToken: 0x779877b7b0D9d8605169Ddbd7836E478b4624789
         });
 
         //Anvil NetworkConfig
@@ -63,8 +67,9 @@ contract HelperConfig is Script, HelperConfigConstants {
             interval: 30,
             vrfCoordinator: address(0),
             keyHash: bytes32(0),
-            subscriptionId: 0, //FIXME: SubId should be fixed form chain link SubId
-            callbackGasLimit: 50000
+            subscriptionId: 0, //FIXME: SubId should be fixed form chain link SubId-->Fixed see Interaction.s.sol && DeployRaffel.s.sol
+            callbackGasLimit: 50000,
+            linkToken: address(0)
         });
     }
 
@@ -81,9 +86,18 @@ contract HelperConfig is Script, HelperConfigConstants {
     }
 
     function handleAnvilMock() internal {
-        VRFCoordinatorV2_5Mock vrfCoordinatorMockAddr = new VRFCoordinatorV2_5Mock(baseFee, gasPrice, weiPerUintLink);
+        VRFCoordinatorV2_5Mock vrfCoordinatorMockAddr = new VRFCoordinatorV2_5Mock(
+                baseFee,
+                gasPrice,
+                weiPerUintLink
+            );
 
-        networkConfigs[ETH_ANVIL_CHAIN_ID].vrfCoordinator = address(vrfCoordinatorMockAddr);
+        networkConfigs[ETH_ANVIL_CHAIN_ID].vrfCoordinator = address(
+            vrfCoordinatorMockAddr
+        );
+
+        LinkToken linkTokenMock = new LinkToken();
+        networkConfigs[ETH_ANVIL_CHAIN_ID].linkToken = address(linkTokenMock);
     }
 
     //* getter function */

@@ -2,15 +2,12 @@
 pragma solidity ^0.8.26;
 
 import {Script, console} from "forge-std/Script.sol";
-import {HelperConfig} from "./HelperConfig.sol";
+import {HelperConfig} from "./HelperConfig.s.sol";
 import {Raffel} from "../src/Raffel.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
 
 contract CreateSubscription is Script {
-    function createSubscriptionUsingConfig()
-        internal
-        returns (uint256, address)
-    {
+    function createSubscriptionUsingConfig() public returns (uint256, address) {
         HelperConfig helperConfig = new HelperConfig();
         address vfrCoordinator = helperConfig.getNetworkConfig().vrfCoordinator;
 
@@ -18,7 +15,8 @@ contract CreateSubscription is Script {
             vfrCoordinator
         );
 
-        console.log(subscriptionId, _vrfCoordinator);
+        // console.log(subscriptionId, _vrfCoordinator);
+        return (subscriptionId, _vrfCoordinator);
     }
 
     function createSubscription(
@@ -34,5 +32,17 @@ contract CreateSubscription is Script {
 
     function run() public {
         createSubscriptionUsingConfig();
+    }
+}
+
+contract FundSubscription is Script {
+    function fundSubscription() internal {
+        HelperConfig helperConfig = new HelperConfig();
+        address vrfCoordinator = helperConfig.getNetworkConfig().vrfCoordinator;
+        uint256 subscriptionId = helperConfig.getNetworkConfig().subscriptionId;
+    }
+
+    function run() external {
+        fundSubscription();
     }
 }
