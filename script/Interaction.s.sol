@@ -89,3 +89,17 @@ contract FundSubscription is Script, HelperConfigConstants {
         fundSubscriptionUsingConfig();
     }
 }
+
+contract AddConsumer is Script {
+    function addConsumerUsingConfig() public {}
+
+    function addConsumer() public {
+        vm.startBroadcast();
+
+        vm.stopBroadcast();
+    }
+
+    function run() public {
+        addConsumerUsingConfig();
+    }
+}
