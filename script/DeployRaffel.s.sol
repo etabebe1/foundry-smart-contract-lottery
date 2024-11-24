@@ -5,7 +5,7 @@ import {Script} from "forge-std/Script.sol";
 import {console} from "forge-std/console.sol";
 import {Raffel} from "../src/Raffel.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
-import {CreateSubscription} from "./Interaction.s.sol";
+import {CreateSubscription, FundSubscription} from "./Interaction.s.sol";
 
 contract DeployRaffel is Script {
     function deployContract() public returns (Raffel, HelperConfig) {
@@ -21,12 +21,11 @@ contract DeployRaffel is Script {
             );
             // createSubscription.createSubscriptionUsingConfig();//Default subscriptionId creator;
 
-            // console.log("Subscription id: ", subscriptionId);
+            networkConfig.subscriptionId = subscriptionId;
         }
-
-        // 83221883169009621906046539587471480394795988389900025103665964919962906628290x779877A7B0D9E8603169DdbD7836e478b4624789
-
         vm.startBroadcast();
+
+        // console.log("subId from netConfig:", networkConfig.subscriptionId);
 
         Raffel raffel = new Raffel(
             networkConfig.entranceFee,

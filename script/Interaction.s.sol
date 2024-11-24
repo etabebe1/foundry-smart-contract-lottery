@@ -28,6 +28,8 @@ contract CreateSubscription is Script {
         uint256 subscriptionId = VRFCoordinatorV2_5Mock(_vfrCoordinator)
             .createSubscription();
         vm.stopBroadcast();
+
+        // console.log("subId:", subscriptionId);
         return (subscriptionId, _vfrCoordinator);
     }
 
@@ -53,21 +55,27 @@ contract FundSubscription is Script, HelperConfigConstants {
         uint256 subscriptionId,
         address linkToken
     ) public {
-        console.log("Subscription id:", vrfCoordinator);
-        console.log("Subscription id:", subscriptionId);
-        console.log("Subscription id:", linkToken);
-        console.log("On ChainId:", block.chainid);
+        // console.log("VRF Coordinator:", vrfCoordinator);
+        // console.log("Subscription ID:", subscriptionId);
+        // console.log("LINK Token:", linkToken);
+        // console.log("Chain ID:", block.chainid);
 
         if (block.chainid == ETH_ANVIL_CHAIN_ID) {
             vm.startBroadcast();
-
-            VRFCoordinatorV2_5Mock coordinator = VRFCoordinatorV2_5Mock(
-                vrfCoordinator
+            VRFCoordinatorV2_5Mock(vrfCoordinator).fundSubscription(
+                subscriptionId,
+                FUND_AMOUNT
             );
-            coordinator.fundSubscription(subscriptionId, FUND_AMOUNT);
             vm.stopBroadcast();
         } else {
             vm.startBroadcast();
+            // console.log(msg.sender);
+
+            // console.log(
+            //     "LINK Balance:",
+            //     LinkToken(linkToken).balanceOf(msg.sender)
+            // );
+
             LinkToken(linkToken).transferAndCall(
                 vrfCoordinator,
                 FUND_AMOUNT,
@@ -77,7 +85,7 @@ contract FundSubscription is Script, HelperConfigConstants {
         }
     }
 
-    function run() external {
+    function run() public {
         fundSubscriptionUsingConfig();
     }
 }

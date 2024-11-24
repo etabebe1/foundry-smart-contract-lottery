@@ -56,9 +56,9 @@ contract HelperConfig is Script, HelperConfigConstants {
             interval: 30,
             vrfCoordinator: 0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B,
             keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
-            subscriptionId: 0,
+            subscriptionId: 58322188316900962190604653958747148039479598838990002510366596491996290662829,
             callbackGasLimit: 50000,
-            linkToken: 0x779877b7b0D9d8605169Ddbd7836E478b4624789
+            linkToken: 0x779877A7B0D9E8603169DdbD7836e478b4624789
         });
 
         //Anvil NetworkConfig
@@ -98,6 +98,11 @@ contract HelperConfig is Script, HelperConfigConstants {
 
         LinkToken linkTokenMock = new LinkToken();
         networkConfigs[ETH_ANVIL_CHAIN_ID].linkToken = address(linkTokenMock);
+
+        vm.startBroadcast();
+        uint256 subscriptionId = vrfCoordinatorMockAddr.createSubscription();
+        vm.stopBroadcast();
+        networkConfigs[ETH_ANVIL_CHAIN_ID].subscriptionId = subscriptionId;
     }
 
     //* getter function */

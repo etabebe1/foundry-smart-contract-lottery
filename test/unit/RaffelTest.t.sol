@@ -34,8 +34,7 @@ contract RaffelTest is Test, RaffelTestConstants {
 
         (raffel, helperConfig) = deployRaffel.deployContract();
 
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig
-            .getNetworkConfig();
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getNetworkConfig();
 
         entranceFee = networkConfig.entranceFee;
         interval = networkConfig.interval;
