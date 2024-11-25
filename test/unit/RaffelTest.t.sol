@@ -105,7 +105,21 @@ contract RaffelTest is Test, RaffelTestConstants {
         assert(upkeepNeeded == false);
     }
 
-    function testCheckUpkeepRaffelIsOpen() public {}
+    function testCheckUpkeepRaffelIsOpen() public {
+        vm.startPrank(PLAYER);
+        vm.deal(PLAYER, INITIAL_PLAYER_BALANCE);
+        raffel.enterRaffel{value: SEND_VALUE}();
+
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        raffel.performUpkeep("");
+
+        (bool upkeepNeeded, ) = raffel.checkUpkeep("");
+
+        console.log(upkeepNeeded);
+        assert(upkeepNeeded == false);
+    }
 
     function testCheckUpkeepRaffelHasEth() public {}
 }
