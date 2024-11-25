@@ -5,7 +5,7 @@ import {Script} from "forge-std/Script.sol";
 import {console} from "forge-std/console.sol";
 import {Raffel} from "../src/Raffel.sol";
 import {HelperConfig} from "./HelperConfig.s.sol";
-import {CreateSubscription, FundSubscription} from "./Interaction.s.sol";
+import {CreateSubscription, FundSubscription, AddConsumer} from "./Interaction.s.sol";
 
 contract DeployRaffel is Script {
     function deployContract() public returns (Raffel, HelperConfig) {
@@ -14,19 +14,25 @@ contract DeployRaffel is Script {
             .getNetworkConfig();
 
         if (networkConfig.subscriptionId == 0) {
+            // create subscription
             CreateSubscription createSubscription = new CreateSubscription();
-
             (uint256 subscriptionId, ) = createSubscription.createSubscription(
                 networkConfig.vrfCoordinator
             );
-            // createSubscription.createSubscriptionUsingConfig();//Default subscriptionId creator;
+            // (uint256 subscriptionId, ) = createSubscription.createSubscriptionUsingConfig();//Default subscriptionId creator;
 
             networkConfig.subscriptionId = subscriptionId;
+
+            // Fund subscription
+            FundSubscription fundSubscription = new FundSubscription();
+            fundSubscription.fundSubscription(
+                networkConfig.vrfCoordinator,
+                networkConfig.subscriptionId,
+                networkConfig.linkToken
+            );
         }
         vm.startBroadcast();
-
         // console.log("subId from netConfig:", networkConfig.subscriptionId);
-
         Raffel raffel = new Raffel(
             networkConfig.entranceFee,
             networkConfig.interval,
@@ -35,8 +41,15 @@ contract DeployRaffel is Script {
             networkConfig.subscriptionId,
             networkConfig.callbackGasLimit
         );
-
         vm.stopBroadcast();
+
+        AddConsumer addConsumer = new AddConsumer();
+        addConsumer.addConsumer(
+            address(raffel),
+            networkConfig.subscriptionId,
+            networkConfig.vrfCoordinator
+        );
+
         return (raffel, helperConfig);
     }
 

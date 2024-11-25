@@ -2,8 +2,8 @@
 pragma solidity ^0.8.24;
 
 import {console} from "forge-std/console.sol";
-import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
-import {VRFV2PlusClient} from "@chainlink/contracts/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {VRFConsumerBaseV2Plus} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
 /**
  * @title A raffel contract
@@ -15,7 +15,11 @@ contract Raffel is VRFConsumerBaseV2Plus {
     error Raffel__SendMoreEth();
     error Raffel__TransferFailed();
     error Raffel_RaffelNotOpen();
-    error Raffel__UpkeepNotNeeded(uint256 balance, uint256 playersLength, uint256 raffelStatus);
+    error Raffel__UpkeepNotNeeded(
+        uint256 balance,
+        uint256 playersLength,
+        uint256 raffelStatus
+    );
 
     /**
      * Type declaration
@@ -87,42 +91,50 @@ contract Raffel is VRFConsumerBaseV2Plus {
      * 3. The contract has ETH.
      * 4. Implicity, your subscription is funded with LINK.
      */
-    function checkUpkeep(bytes memory /* checkData */ )
-        public
-        view
-        returns (bool upkeepNeeded, bytes memory /* performData */ )
-    {
+    function checkUpkeep(
+        bytes memory /* checkData */
+    ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
         bool timeHasPassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
         bool raffelIsOpen = s_raffelStatus == RaffelStatus.OPEN;
         bool raffelHasEth = address(this).balance > 0;
         bool raffelHasPlayers = s_players.length > 0;
 
-        upkeepNeeded = (timeHasPassed && raffelIsOpen && raffelHasEth && raffelHasPlayers);
+        upkeepNeeded = (timeHasPassed &&
+            raffelIsOpen &&
+            raffelHasEth &&
+            raffelHasPlayers);
 
         return (upkeepNeeded, "");
     }
 
-    function performUpkeep(bytes calldata /*performData*/ ) external {
+    function performUpkeep(bytes calldata /*performData*/) external {
         // console.log("Block Timestamp:", block.timestamp);
         // console.log("Interval:", i_interval);
         // console.log("Last TimeStamp:", s_lastTimeStamp);
 
-        (bool upkeepNeeded,) = checkUpkeep("");
+        (bool upkeepNeeded, ) = checkUpkeep("");
         if (!upkeepNeeded) {
-            revert Raffel__UpkeepNotNeeded(address(this).balance, s_players.length, uint256(s_raffelStatus));
+            revert Raffel__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                uint256(s_raffelStatus)
+            );
         }
 
-        s_raffelStatus == RaffelStatus.CALCULATING;
+        s_raffelStatus = RaffelStatus.CALCULATING;
 
-        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient.RandomWordsRequest({
-            keyHash: i_keyHash,
-            subId: i_subscriptionId,
-            requestConfirmations: REQUEST_CONFIRMATIONS,
-            callbackGasLimit: i_callbackGasLimit,
-            numWords: NUM_WORDS,
-            // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
-            extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
-        });
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
+            .RandomWordsRequest({
+                keyHash: i_keyHash,
+                subId: i_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: i_callbackGasLimit,
+                numWords: NUM_WORDS,
+                // Set nativePayment to true to pay for VRF requests with Sepolia ETH instead of LINK
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            });
 
         s_vrfCoordinator.requestRandomWords(request);
     }
@@ -145,7 +157,7 @@ contract Raffel is VRFConsumerBaseV2Plus {
         s_lastTimeStamp = block.timestamp;
         emit RaffelWinner(s_recentWinner);
 
-        (bool success,) = recentWinner.call{value: address(this).balance}("");
+        (bool success, ) = recentWinner.call{value: address(this).balance}("");
 
         if (!success) {
             revert Raffel__TransferFailed();
@@ -161,7 +173,9 @@ contract Raffel is VRFConsumerBaseV2Plus {
         return s_raffelStatus;
     }
 
-    function getPlayers(uint256 _index) external view returns (address payable) {
+    function getPlayers(
+        uint256 _index
+    ) external view returns (address payable) {
         return s_players[_index];
     }
 }

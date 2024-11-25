@@ -4,10 +4,16 @@ test= "test"
 out = "out"
 libs = ["lib"]
 
-remappings = [
+remapping = [
   '@chainlink/contracts/=lib/chainlink-brownie-contracts/contracts/src/',
-  "forge-std/=lib/forge-std/src/",
-  '@solmate/=lib/solmate/src/'
+  'forge-std/=lib/forge-std/src/',
+  # '@solmate/=lib/solmate/src/',
+'@solmate/=lib/solmate/src/tokens/'
+]
+
+fs_permission = [
+  {access = "read", path = "./broadcast"},
+  {access = "read", path = "./report"}
 ]
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

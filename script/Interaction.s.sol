@@ -4,8 +4,10 @@ pragma solidity ^0.8.26;
 import {Script, console} from "forge-std/Script.sol";
 import {HelperConfig, HelperConfigConstants} from "./HelperConfig.s.sol";
 import {Raffel} from "../src/Raffel.sol";
-import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+import {VRFCoordinatorV2_5Mock} from "../lib/chainlink-brownie-contracts/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
+
 import {LinkToken} from "../test/mocks/LinkToken.sol";
+import {DevOpsTools} from "../lib/foundry-devops/src/DevOpsTools.sol";
 
 contract CreateSubscription is Script {
     function createSubscriptionUsingConfig() public returns (uint256, address) {
@@ -70,7 +72,6 @@ contract FundSubscription is Script, HelperConfigConstants {
         } else {
             vm.startBroadcast();
             // console.log(msg.sender);
-
             // console.log(
             //     "LINK Balance:",
             //     LinkToken(linkToken).balanceOf(msg.sender)
@@ -90,16 +91,42 @@ contract FundSubscription is Script, HelperConfigConstants {
     }
 }
 
-contract AddConsumer is Script {
-    function addConsumerUsingConfig() public {}
+contract AddConsumer is Script, HelperConfigConstants {
+    function addConsumerUsingConfig(address mostRecentDeployed) public {
+        HelperConfig helperConfig = new HelperConfig();
+        address vrfCoordinator = helperConfig.getNetworkConfig().vrfCoordinator;
+        uint256 subscriptionId = helperConfig.getNetworkConfig().subscriptionId;
 
-    function addConsumer() public {
+        addConsumer(mostRecentDeployed, subscriptionId, vrfCoordinator);
+    }
+
+    function addConsumer(
+        address mostRecentDeployed,
+        uint256 subscriptionId,
+        address vrfCoordinator
+    ) public {
+        // console.log("Adding consumer contract:", mostRecentDeployed);
+        // console.log("To VRFCoordinator:", vrfCoordinator);
+        // console.log("With Subscription ID:", subscriptionId);
+        // console.log("On chain:", block.chainid);
+
         vm.startBroadcast();
-
+        /**
+         *  @dev addConsumer function is coming from
+         * SubscriptionAPI
+         */
+        VRFCoordinatorV2_5Mock(vrfCoordinator).addConsumer(
+            subscriptionId,
+            mostRecentDeployed
+        );
         vm.stopBroadcast();
     }
 
     function run() public {
-        addConsumerUsingConfig();
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
+            "Raffel",
+            block.chainid
+        );
+        addConsumerUsingConfig(mostRecentlyDeployed);
     }
 }
