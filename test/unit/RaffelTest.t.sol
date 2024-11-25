@@ -29,34 +29,13 @@ contract RaffelTest is Test, RaffelTestConstants {
     event RaffelEntered(address indexed player);
     event RaffelWinner(address indexed);
 
-    // function setUp() public {
-    //     DeployRaffel deployRaffel = new DeployRaffel();
-
-    //     (raffel, helperConfig) = deployRaffel.deployContract();
-    //     HelperConfig.NetworkConfig memory networkConfig = helperConfig.getNetworkConfig();
-
-    //     entranceFee = networkConfig.entranceFee;
-    //     interval = networkConfig.interval;
-    //     vrfCoordinator = networkConfig.vrfCoordinator;
-    //     keyHash = networkConfig.keyHash;
-    //     subscriptionId = networkConfig.subscriptionId;
-    //     callbackGasLimit = networkConfig.callbackGasLimit;
-    // }
-
     function setUp() public {
         DeployRaffel deployRaffel = new DeployRaffel();
-        console.log("Deploying Raffel...");
 
         (raffel, helperConfig) = deployRaffel.deployContract();
-        console.log("Raffel deployed at:", address(raffel));
-        console.log("HelperConfig deployed at:", address(helperConfig));
 
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
             .getNetworkConfig();
-        console.log("Entrance Fee:", networkConfig.entranceFee);
-        console.log("Interval:", networkConfig.interval);
-        console.log("VRF Coordinator:", networkConfig.vrfCoordinator);
-        console.log("Subscription ID:", networkConfig.subscriptionId);
 
         entranceFee = networkConfig.entranceFee;
         interval = networkConfig.interval;
@@ -66,6 +45,7 @@ contract RaffelTest is Test, RaffelTestConstants {
         callbackGasLimit = networkConfig.callbackGasLimit;
     }
 
+    //** Enter Raffel test **//
     function testRaffelStatus() public view {
         assert(raffel.getRaffelStatus() == Raffel.RaffelStatus.OPEN);
     }
@@ -109,4 +89,23 @@ contract RaffelTest is Test, RaffelTestConstants {
         vm.expectRevert(Raffel.Raffel_RaffelNotOpen.selector);
         raffel.enterRaffel{value: SEND_VALUE}();
     }
+
+    //** Check UPkeep Test **//
+    // function testEnoughTimeHasPassedForUpkeep() public {
+
+    // }
+
+    function testCheckUpkeepTimeHasPassed() public {
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        (bool upkeepNeeded, ) = raffel.checkUpkeep("");
+
+        console.log(upkeepNeeded);
+        assert(upkeepNeeded == false);
+    }
+
+    function testCheckUpkeepRaffelIsOpen() public {}
+
+    function testCheckUpkeepRaffelHasEth() public {}
 }
